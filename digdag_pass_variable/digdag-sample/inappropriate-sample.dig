@@ -1,0 +1,16 @@
+timezone: Asia/Tokyo
+
+_export:
+  workflow_name: sample-digdag-workflow
+
++run_my_workflow:
+  _export:
+    my_var: Before
+
+  +step1:
+    _export:
+      my_var: After
+    sh>: echo "my_var -> ${my_var}"
+
+  +step2:
+    sh>: echo "my_var -> ${my_var}"

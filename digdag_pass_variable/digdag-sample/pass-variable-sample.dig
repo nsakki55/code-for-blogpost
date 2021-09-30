@@ -1,0 +1,20 @@
+timezone: Asia/Tokyo
+
+_export:
+  workflow_name: sample-digdag-workflow
+
+  plugin:
+    repositories:
+      - https://jitpack.io
+    dependencies:
+      - com.github.takemikami:digdag-plugin-shresult:0.0.1
+
+
++run_my_workflow:
+  +step1:
+    sh_result>: echo {"var":"After"}
+    destination_variable: my_var
+    stdout_format: json-list-map
+
+  +step2:
+    sh>: echo "my_var -> ${my_var}"
