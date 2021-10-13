@@ -1,0 +1,18 @@
+timezone: Asia/Tokyo
+
+_export:
+  workflow_name: sample-variable-behaviour
+  var1: value1
+  var2: value2
+
++run_my_workflow:
+  +step1:
+    _export:
+      param: true
+      param2: false
+      param3: ${param=true}
+    if>: ${param || param2}
+    _do:
+      echo>: 'success'
+    _else_do:
+      echo>: 'fail'
