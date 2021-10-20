@@ -6,9 +6,9 @@ _export:
 +run_my_workflow:
   +step1:
     _export:
-      param: false
-      param2: true
-    if>: ${param && param2}
+      param: ${1+1 == 1}
+      param2: ${1+1 == 2}
+    if>: ${param=='true' && param2=='true'}
     _do:
       echo>: 'success'
     _else_do:
@@ -18,7 +18,7 @@ _export:
     _export:
       param: ${1+1 == 1}
       param2: ${1+1 == 2}
-    if>: ${param && param2}
+    if>: ${param=='true' || param2=='true'}
     _do:
       echo>: 'success'
     _else_do:
