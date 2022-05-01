@@ -1,0 +1,19 @@
+_export:
+  plugin:
+    repositories:
+      - https://jitpack.io
+    dependencies:
+      - com.github.takemikami:digdag-plugin-shresult:0.0.1
+
++step1:
+  sh_result>: cat resultset.json
+  destination_variable: resultset
+  stdout_format: json-list-map
+
++step2:
+  for_each>:
+    rv: ${resultset}
+  _parallel:
+    true
+  _do:
+    echo>: ${rv.id}=${rv.name}
