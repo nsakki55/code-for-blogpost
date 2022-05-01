@@ -12,9 +12,9 @@ _export:
 
 +run_my_workflow:
   +step1:
-    sh_result>: echo {"var":"After"}
+    sh_result>: echo "[{\"var\":\"After\"}]"
     destination_variable: my_var
     stdout_format: json-list-map
 
   +step2:
-    sh>: echo "my_var -> ${my_var}"
+    sh>: echo "my_var -> ${my_var[0].var}"
