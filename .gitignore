@@ -1,7 +1,8 @@
-____pycache__
+___pycache__
 *.pyc
 .idea/*
 *.python-version
-
-
+*.DS_Store
+*.ipynb_checkpoints/
+config/*
 
