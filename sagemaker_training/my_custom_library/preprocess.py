@@ -6,7 +6,6 @@ from sklearn.feature_extraction import FeatureHasher
 
 feature_columns = [
     "id",
-    "click",
     "hour",
     "C1",
     "banner_pos",

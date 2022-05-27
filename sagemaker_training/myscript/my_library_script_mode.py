@@ -10,9 +10,6 @@ from sklearn.linear_model import SGDClassifier
 
 
 def parse_args():
-    """
-    Parse arguments.
-    """
     env = environment.Environment()
 
     parser = argparse.ArgumentParser()
@@ -33,9 +30,6 @@ def parse_args():
 
 
 def load_dataset(path: str) -> (pd.DataFrame, np.array):
-    """
-    Load entire dataset.
-    """
     # Take the set of files and read them all into a single pandas dataframe
     files = [os.path.join(path, file) for file in os.listdir(path) if file.endswith("csv")]
 
@@ -52,9 +46,6 @@ def load_dataset(path: str) -> (pd.DataFrame, np.array):
 
 
 def main(args):
-    """
-    Train a CTR Prediction
-    """
     print("Training mode")
 
     X_train, y_train = load_dataset(args.train)
@@ -78,15 +69,6 @@ def main(args):
 
     print("Score: {}".format(model.score(X_test_hashed, y_test)))
     joblib.dump(model, os.path.join(args.model_dir, "model.joblib"))
-
-
-def model_fn(model_dir):
-    """
-    Deserialized and return fitted model
-    Note that this should have the same name as the serialized model in the main method
-    """
-    clf = joblib.load(os.path.join(model_dir, "model.joblib"))
-    return clf
 
 
 if __name__ == "__main__":
