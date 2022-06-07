@@ -1,12 +1,41 @@
 import argparse
 import os
+from datetime import datetime
 
 import joblib
 import numpy as np
 import pandas as pd
-from my_custom_library import feature_columns, preprocess, target
 from sagemaker_training import environment
+from sklearn.feature_extraction import FeatureHasher
 from sklearn.linear_model import SGDClassifier
+
+feature_columns = [
+    "id",
+    "hour",
+    "C1",
+    "banner_pos",
+    "site_id",
+    "site_domain",
+    "site_category",
+    "app_id",
+    "app_domain",
+    "app_category",
+    "device_id",
+    "device_ip",
+    "device_model",
+    "device_type",
+    "device_conn_type",
+    "C14",
+    "C15",
+    "C16",
+    "C17",
+    "C18",
+    "C19",
+    "C20",
+    "C21",
+]
+
+target = "click"
 
 
 def parse_args():
@@ -18,6 +47,11 @@ def parse_args():
     parser.add_argument("--alpha", type=float, default=0.00001)
     parser.add_argument("--n-jobs", type=int, default=env.num_cpus)
     parser.add_argument("--eta0", type=float, default=2.0)
+
+    ## hyperparameters laoded from envrionment varibale
+    # parser.add_argument("--alpha", type=float, default=float(os.environ['SM_HP_ALPHA']))
+    # parser.add_argument("--n-jobs", type=int, default=env.num_cpus)
+    # parser.add_argument("--eta0", type=float, default=float(os.environ['SM_HP_ETA0']))
 
     # data directories
     parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAIN"))
@@ -31,7 +65,9 @@ def parse_args():
 
 def load_dataset(path: str) -> (pd.DataFrame, np.array):
     # Take the set of files and read them all into a single pandas dataframe
-    files = [os.path.join(path, file) for file in os.listdir(path) if file.endswith("csv")]
+    files = [
+        os.path.join(path, file) for file in os.listdir(path) if file.endswith("csv")
+    ]
 
     if len(files) == 0:
         raise ValueError("Invalid # of files in dir: {}".format(path))
@@ -39,13 +75,22 @@ def load_dataset(path: str) -> (pd.DataFrame, np.array):
     raw_data = [pd.read_csv(file, sep=",") for file in files]
     data = pd.concat(raw_data)
 
-    # # labels are in the first column
     y = data[target]
     X = data[feature_columns]
     return X, y
 
 
-def main(args):
+def preprocess(df: pd.DataFrame):
+    df["hour"] = df["hour"].map(lambda x: datetime.strptime(str(x), "%y%m%d%H"))
+    df["day_of_week"] = df["hour"].map(lambda x: x.hour)
+
+    feature_hasher = FeatureHasher(n_features=2**24, input_type="string")
+    hashed_feature = feature_hasher.fit_transform(np.asanyarray(df.astype(str)))
+
+    return hashed_feature
+
+
+def main(args) -> None:
     print("Training mode")
 
     X_train, y_train = load_dataset(args.train)

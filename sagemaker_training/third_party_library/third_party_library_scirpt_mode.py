@@ -4,6 +4,7 @@ from datetime import datetime
 
 import joblib
 import numpy as np
+import optuna
 import pandas as pd
 from sagemaker_training import environment
 from sklearn.feature_extraction import FeatureHasher
@@ -44,12 +45,14 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # hyperparameters sent by the client are passed as command-line arguments to the script
-    parser.add_argument("--alpha", type=float, default=0.00001)
+    parser.add_argument("--max_alpha", type=float, default=0.1)
     parser.add_argument("--n-jobs", type=int, default=env.num_cpus)
-    parser.add_argument("--eta0", type=float, default=2.0)
 
     # data directories
     parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAIN"))
+    parser.add_argument(
+        "--validation", type=str, default=os.environ.get("SM_CHANNEL_VALIDATION")
+    )
     parser.add_argument("--test", type=str, default=os.environ.get("SM_CHANNEL_TEST"))
 
     # model directory: we will use the default set by SageMaker, /opt/ml/model
@@ -60,7 +63,9 @@ def parse_args():
 
 def load_dataset(path: str) -> (pd.DataFrame, np.array):
     # Take the set of files and read them all into a single pandas dataframe
-    files = [os.path.join(path, file) for file in os.listdir(path) if file.endswith("csv")]
+    files = [
+        os.path.join(path, file) for file in os.listdir(path) if file.endswith("csv")
+    ]
 
     if len(files) == 0:
         raise ValueError("Invalid # of files in dir: {}".format(path))
@@ -68,7 +73,6 @@ def load_dataset(path: str) -> (pd.DataFrame, np.array):
     raw_data = [pd.read_csv(file, sep=",") for file in files]
     data = pd.concat(raw_data)
 
-    # # labels are in the first column
     y = data[target]
     X = data[feature_columns]
     return X, y
@@ -84,34 +88,51 @@ def preprocess(df: pd.DataFrame):
     return hashed_feature
 
 
-def start(args):
+def main(args) -> None:
     print("Training mode")
 
     X_train, y_train = load_dataset(args.train)
+    X_validation, y_validation = load_dataset(args.validation)
     X_test, y_test = load_dataset(args.test)
 
     y_train = np.asarray(y_train).ravel()
     X_train_hashed = preprocess(X_train)
 
+    y_validation = np.asarray(y_validation).ravel()
+    X_validation_hashed = preprocess(X_validation)
+
     y_test = np.asarray(y_test).ravel()
     X_test_hashed = preprocess(X_test)
 
-    hyperparameters = {
-        "alpha": args.alpha,
-        "n_jobs": args.n_jobs,
-        "eta0": args.eta0,
-    }
+    def objective(trial):
+        alpha = trial.suggest_uniform("alpha", 0, args.max_alpha)
+        model = SGDClassifier(loss="log", penalty="l2", random_state=42, alpha=alpha)
+
+        model.partial_fit(X_train_hashed, y_train, classes=[0, 1])
+        score = model.score(X_validation_hashed, y_validation)
+
+        print("x: %1.3f, score: %1.3f" % (alpha, score))
+        return score
+
     print("Training the classifier")
-    model = SGDClassifier(loss="log", penalty="l2", random_state=42, **hyperparameters)
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=100)
 
-    model.partial_fit(X_train_hashed, y_train, classes=[0, 1])
+    best_params = study.best_params
+    print("best param: {}".format(best_params))
 
-    print("Score: {}".format(model.score(X_test_hashed, y_test)))
-    joblib.dump(model, os.path.join(args.model_dir, "model.joblib"))
+    best_model = SGDClassifier(
+        loss="log", penalty="l2", random_state=42, alpha=best_params["alpha"]
+    )
+    best_model.partial_fit(X_train_hashed, y_train, classes=[0, 1])
+
+    print("Score: {}".format(best_model.score(X_test_hashed, y_test)))
+
+    joblib.dump(best_model, os.path.join(args.model_dir, "model.joblib"))
 
 
 if __name__ == "__main__":
 
     args, _ = parse_args()
 
-    start(args)
+    main(args)
