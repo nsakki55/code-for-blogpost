@@ -1,0 +1,13 @@
+FROM python:3.6-slim-buster
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc g++
+
+RUN pip3 install pandas numpy joblib scikit-learn cython
+RUN pip3 install fastFM
+RUN pip3 install sagemaker-training
+
+ADD custom_toolkit_container_training_script.py /opt/ml/code/custom_toolkit_container_training_script.py
+
+# Defines entrypoint script
+ENV SAGEMAKER_PROGRAM custom_toolkit_container_training_script.py

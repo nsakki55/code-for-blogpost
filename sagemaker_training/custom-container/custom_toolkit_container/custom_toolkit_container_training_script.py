@@ -1,16 +1,17 @@
 import argparse
 import os
-from datetime import datetime
 
 import joblib
 import numpy as np
 import pandas as pd
+from fastFM.mcmc import FMClassification
 from sagemaker_training import environment
-from sklearn.feature_extraction import FeatureHasher
-from sklearn.linear_model import SGDClassifier
+from sklearn.metrics import log_loss
+from sklearn.preprocessing import OneHotEncoder
 
 feature_columns = [
     "id",
+    "click",
     "hour",
     "C1",
     "banner_pos",
@@ -44,9 +45,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # hyperparameters sent by the client are passed as command-line arguments to the script
-    parser.add_argument("--alpha", type=float, default=0.00001)
-    parser.add_argument("--n-jobs", type=int, default=env.num_cpus)
-    parser.add_argument("--eta0", type=float, default=2.0)
+    parser.add_argument("--rank", type=int, default=9)
+    parser.add_argument("--n_iter", type=int, default=12)
 
     # data directories
     parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAIN"))
@@ -60,7 +60,9 @@ def parse_args():
 
 def load_dataset(path: str) -> (pd.DataFrame, np.array):
     # Take the set of files and read them all into a single pandas dataframe
-    files = [os.path.join(path, file) for file in os.listdir(path) if file.endswith("csv")]
+    files = [
+        os.path.join(path, file) for file in os.listdir(path) if file.endswith("csv")
+    ]
 
     if len(files) == 0:
         raise ValueError("Invalid # of files in dir: {}".format(path))
@@ -74,14 +76,12 @@ def load_dataset(path: str) -> (pd.DataFrame, np.array):
     return X, y
 
 
-def preprocess(df: pd.DataFrame):
-    df["hour"] = df["hour"].map(lambda x: datetime.strptime(str(x), "%y%m%d%H"))
-    df["day_of_week"] = df["hour"].map(lambda x: x.hour)
+class Preprocessor:
+    def __init__(self, X_train):
+        self.encoder = OneHotEncoder(handle_unknown="ignore").fit(X_train)
 
-    feature_hasher = FeatureHasher(n_features=2**24, input_type="string")
-    hashed_feature = feature_hasher.fit_transform(np.asanyarray(df.astype(str)))
-
-    return hashed_feature
+    def transorm(self, X):
+        return self.encoder.transform(X)
 
 
 def start(args):
@@ -89,24 +89,20 @@ def start(args):
 
     X_train, y_train = load_dataset(args.train)
     X_test, y_test = load_dataset(args.test)
-
     y_train = np.asarray(y_train).ravel()
-    X_train_hashed = preprocess(X_train)
-
     y_test = np.asarray(y_test).ravel()
-    X_test_hashed = preprocess(X_test)
 
-    hyperparameters = {
-        "alpha": args.alpha,
-        "n_jobs": args.n_jobs,
-        "eta0": args.eta0,
-    }
+    preprocessor = Preprocessor(X_train)
+    X_train_preprocess = preprocessor.transorm(X_train)
+    X_test_preprocess = preprocessor.transorm(X_test)
+
     print("Training the classifier")
-    model = SGDClassifier(loss="log", penalty="l2", random_state=42, **hyperparameters)
+    model = FMClassification(rank=args.rank, n_iter=args.n_iter)
 
-    model.partial_fit(X_train_hashed, y_train, classes=[0, 1])
+    y_pred = model.fit_predict_proba(X_train_preprocess, y_train, X_test_preprocess)
 
-    print("Score: {}".format(model.score(X_test_hashed, y_test)))
+    print("fast fm log loss: ", log_loss(y_test, y_pred))
+
     joblib.dump(model, os.path.join(args.model_dir, "model.joblib"))
 
 

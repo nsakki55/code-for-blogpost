@@ -1,7 +1,9 @@
 FROM 354813040037.dkr.ecr.ap-northeast-1.amazonaws.com/sagemaker-scikit-learn:0.23-1-cpu-py3
 
-ADD extend_sagemaker_container/trainer.py /opt/ml/code/trainer.py
+RUN pip3 install --upgrade pip
+RUN pip3 install optuna==2.10.0
+
+ADD extend_sagemaker_container/extend_sagemaker_container_trainig_script.py /opt/ml/code/extend_sagemaker_container_trainig_script.py
 
 # Defines train.py as script entrypoint
-# https://github.com/aws/sagemaker-training-toolkit#create-a-docker-image-and-train-a-model
-ENV SAGEMAKER_PROGRAM trainer.py
+ENV SAGEMAKER_PROGRAM extend_sagemaker_container_trainig_script.py
