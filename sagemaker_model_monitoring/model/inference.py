@@ -1,10 +1,11 @@
 import os
 from io import StringIO
-
+import json
 import joblib
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction import FeatureHasher
+
 
 feature_names = {
     0: "id",
@@ -22,6 +23,14 @@ feature_names = {
     12: "device_model",
     13: "device_type",
     14: "device_conn_type",
+    15: "C14",
+    16: "C15",
+    17: "C16",
+    18: "C17",
+    19: "C18",
+    20: "C19",
+    21: "C20",
+    22: "C21"
 }
 
 
@@ -63,11 +72,11 @@ def predict_fn(input_data, model):
     return model.predict_proba(input_data)
 
 
-def output_fn(prediction, content_type):
-    """
-    prediction: the returned value from predict_fn above
-    content_type: the content type the endpoint expects to be returned. Ex: JSON, string
-    """
+# def output_fn(prediction, content_type):
+#     """
+#     prediction: the returned value from predict_fn above
+#     content_type: the content type the endpoint expects to be returned. Ex: JSON, string
+#     """
 
-    response = {"result": [{"prediction": prediction[0][1], "model": "modelA"}]}
-    return response
+#     response = {"probability": prediction[0][1]} 
+#     return json.dumps(response)

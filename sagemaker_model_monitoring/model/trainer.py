@@ -24,6 +24,14 @@ feature_names = {
     12: "device_model",
     13: "device_type",
     14: "device_conn_type",
+    15: "C14",
+    16: "C15",
+    17: "C16",
+    18: "C17",
+    19: "C18",
+    20: "C19",
+    21: "C20",
+    22: "C21"
 }
 
 
