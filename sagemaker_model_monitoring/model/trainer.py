@@ -50,7 +50,6 @@ def parse_args():
 
     # data directories
     parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAIN"))
-    parser.add_argument("--test", type=str, default=os.environ.get("SM_CHANNEL_TEST"))
 
     # model directory: we will use the default set by SageMaker, /opt/ml/model
     parser.add_argument("--model_dir", type=str, default=os.environ.get("SM_MODEL_DIR"))
@@ -83,13 +82,9 @@ def main(args):
     print("Training mode")
 
     X_train, y_train = load_dataset(args.train)
-    X_test, y_test = load_dataset(args.test)
 
     y_train = np.asarray(y_train).ravel()
     X_train_hashed = preprocess(X_train)
-
-    y_test = np.asarray(y_test).ravel()
-    X_test_hashed = preprocess(X_test)
 
     hyperparameters = {
         "alpha": args.alpha,
@@ -101,7 +96,6 @@ def main(args):
 
     model.partial_fit(X_train_hashed, y_train, classes=[0, 1])
 
-    print("Score: {}".format(model.score(X_test_hashed, y_test)))
     joblib.dump(model, os.path.join(args.model_dir, "model.joblib"))
 
 
