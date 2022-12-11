@@ -1,6 +1,8 @@
-___pycache__
+__pycache__
+avazu-ctr-prediction/
 *.pyc
-.idea/*
+*.csv
+*.idea
 *.python-version
 *.DS_Store
 *.ipynb_checkpoints/

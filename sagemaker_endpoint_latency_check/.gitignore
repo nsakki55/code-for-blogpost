@@ -1,0 +1,4 @@
+*.log
+*.txt
+*.tar.gz
+SageMaker-AutoLoad/
