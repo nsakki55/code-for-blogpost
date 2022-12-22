@@ -3,9 +3,9 @@ import boto3
 import inspect
 from locust import task
 from botocore.config import Config
-from locust import TaskSet, task, events 
+from locust import TaskSet, task, events
 from locust.contrib.fasthttp import FastHttpUser
-from locust import task, events, constant 
+from locust import task, events, constant
 
 
 def stopwatch(func):
@@ -44,6 +44,7 @@ def stopwatch(func):
 class ProtocolClient:
     def __init__(self, host):
         self.endpoint_name = host.split("/")[-1]
+        print(self.endpoint_name)
         self.region = "ap-northeast-1"
         self.content_type = "application/json"
         self.payload = "0"
@@ -54,12 +55,9 @@ class ProtocolClient:
         )
 
     @stopwatch
-    def sagemaker_client_invoke_endpoint(self, instance_type: str):
-        _endpoint_name = "{}-{}".format(
-            self.endpoint_name, instance_type.replace(".", "")
-        )
+    def sagemaker_client_invoke_endpoint(self):
         response = self.sagemaker_client.invoke_endpoint(
-            EndpointName=_endpoint_name,
+            EndpointName=self.endpoint_name,
             Body=self.payload,
             ContentType=self.content_type,
         )
@@ -78,44 +76,8 @@ class ProtocolLocust(FastHttpUser):
 
 class ProtocolTasks(TaskSet):
     @task
-    def mlt2medium(self):
-        self.client.sagemaker_client_invoke_endpoint(instance_type="ml.t2.medium")
-
-    @task
-    def mlt2large(self):
-        self.client.sagemaker_client_invoke_endpoint(instance_type="ml.t2.large")
-
-    # @task
-    # def mlt2xlarge(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.t2.xlarge")
-
-    # @task
-    # def mlt22xlarge(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.t2.2xlarge")
-
-    # @task
-    # def mlm5large(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.m5.large")
-
-    # @task
-    # def mlm5xlarge(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.m5.xlarge")
-
-    # @task
-    # def mlm52xlarge(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.m5.2xlarge")
-
-    # @task
-    # def mlm54xlarge(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.m5.4xlarge")
-
-    # @task
-    # def mlm512xlarge(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.m5.12xlarge")
-
-    # @task
-    # def mlm524large(self):
-    #     self.client.sagemaker_client_invoke_endpoint(instance_type="ml.m5.24xlarge")
+    def custom_protocol_boto3(self):
+        self.client.sagemaker_client_invoke_endpoint()
 
 
 class ProtocolUser(ProtocolLocust):
