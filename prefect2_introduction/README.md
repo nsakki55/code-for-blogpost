@@ -1,2 +1,7 @@
 # Prefect2.0入門
-![etl](./img/etl.png)
+
+[comment]: <> (![etl]&#40;./img/etl.png&#41;)
+
+<p align="center">
+  <img src="img/etl.png" alt="altテキスト" width="320px">
+</p>
