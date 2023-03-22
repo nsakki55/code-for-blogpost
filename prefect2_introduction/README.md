@@ -1,4 +1,4 @@
-# Prefect ETL Workflow Example
+# Prefect2.0 ETL Workflow Example
 
 [comment]: <> (![etl]&#40;./img/etl.png&#41;)
 
@@ -19,6 +19,10 @@ prefect == 2.8.5
 prefect-aws == 0.2.5
 pandas == 1.5.1
 s3fs
+```
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Local Run
