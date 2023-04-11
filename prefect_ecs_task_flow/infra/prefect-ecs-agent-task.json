@@ -1,0 +1,39 @@
+[
+  {
+    "name": "prefect-ecs-agent",
+    "image": "prefecthq/prefect:2.8.7-python3.8",
+    "essential": true,
+    "portMappings": [],
+    "memory": 2048,
+    "cpu": 1024,
+    "environment": [ 
+      {
+        "name": "PREFECT_LOGGING_LEVEL",
+        "value": "INFO"
+      },
+      {
+        "name": "PREFECT_API_URL",
+        "value": "${prefect_api_url}"
+      },
+      {
+        "name": "PREFECT_API_KEY",
+        "value": "${prefect_api_key}"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "ap-northeast-1",
+        "awslogs-stream-prefix": "ecs-pool"
+      }
+    },
+    "command": [
+      "prefect",
+      "agent",
+      "start",
+      "-p",
+      "dev-ecs"
+    ]
+  }
+]

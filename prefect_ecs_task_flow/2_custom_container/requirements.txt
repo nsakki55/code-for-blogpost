@@ -1,0 +1,4 @@
+prefect-aws==0.2.5
+s3fs==2023.1.0
+pandas==1.5.1
+boto3==1.24.59
