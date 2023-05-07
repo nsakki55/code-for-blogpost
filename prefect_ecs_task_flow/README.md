@@ -1,5 +1,4 @@
-# How to Run Flow as ECS Task
-blog: 
+# How to Run Prefect Flow as ECS Task
 ## 1. BuiltIn Container + Storage
 Use the Prefect official Docker image, download the files required for running the Flow.
 
