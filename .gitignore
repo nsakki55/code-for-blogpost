@@ -6,5 +6,8 @@ avazu-ctr-prediction/
 *.python-version
 *.DS_Store
 *.ipynb_checkpoints/
+*.tfstate
+*.tfstate.backup
+*.terraform/
 config/*
 
