@@ -1,0 +1,9 @@
+src/*.html
+src/*.bin
+src/*.json
+src/*.png
+src/*.gif
+src/output
+src/memray-results
+
+
