@@ -1,0 +1,50 @@
+# Generic metadata about this project
+name: flows
+prefect-version: 2.13.8
+
+# build section allows you to manage and build docker images
+build:
+- prefect_docker.deployments.steps.build_docker_image:
+    id: build-image
+    requires: prefect-docker>=0.4.0
+    image_name: "{{ $PREFECT_IMAGE_NAME }}"
+    tag: latest
+    dockerfile: auto
+    platform: "linux/amd64"
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push:
+- prefect_docker.deployments.steps.push_docker_image:
+    requires: prefect-docker>=0.4.0
+    image_name: "{{ build-image.image_name }}"
+    tag: "{{ build-image.tag }}"
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+# pull:
+# - prefect.deployments.steps.set_working_directory:
+#     directory: /opt/prefect/flows
+
+# the definitions section allows you to define reusable components for your deployments
+definitions:
+  tags: &common_tags
+    - "gke"
+  work_pool: &common_work_pool
+    name: "gke"
+    job_variables:
+      image: "{{ build-image.image }}"
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: "default"
+  tags: *common_tags
+  schedule: null
+  entrypoint: "flows/hello.py:hello"
+  work_pool: *common_work_pool
+
+- name: "arthur"
+  tags: *common_tags
+  schedule: null
+  entrypoint: "flows/hello.py:hello"
+  parameters:
+    name: "Arthur"
+  work_pool: *common_work_pool
