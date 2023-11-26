@@ -1,0 +1,6 @@
+FROM prefecthq/prefect:2.13.7-python3.8
+COPY requirements.txt /opt/prefect/requirements.txt
+RUN python -m pip install -r /opt/prefect/requirements.txt
+COPY . /opt/prefect/custom_docker_image/flows/
+COPY . /opt/prefect/custom_docker_image/
+WORKDIR /opt/prefect/custom_docker_image
