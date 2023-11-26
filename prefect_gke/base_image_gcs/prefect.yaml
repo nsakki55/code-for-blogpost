@@ -1,0 +1,33 @@
+name: flows
+prefect-version: 2.13.8
+
+build: null
+
+push:
+- prefect_gcp.deployments.steps.push_to_gcs:
+    id: push_code
+    requires: prefect-gcp>=0.4.3
+    bucket: prefect-gcs-sample
+    folder: flows 
+    credentials: null
+
+pull:
+- prefect_gcp.deployments.steps.pull_from_gcs:
+    id: pull_code
+    requires: prefect-gcp>=0.4.3
+    bucket: '{{ push_code.bucket }}'
+    folder: flows 
+    credentials: null
+
+definitions:
+  tags: &common_tags
+    - "gke"
+  work_pool: &common_work_pool
+    name: "gke"
+
+deployments:
+- name: "base_image_gcs"
+  tags: *common_tags
+  schedule: null
+  entrypoint: "flows/etl.py:etl"
+  work_pool: *common_work_pool

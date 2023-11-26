@@ -1,0 +1,36 @@
+name: flows
+prefect-version: 2.13.8
+
+build:
+- prefect_docker.deployments.steps.build_docker_image:
+    id: build-image
+    requires: prefect-docker>=0.4.0
+    image_name: "asia-docker.pkg.dev/{{ $GCP_PROJECT_ID }}/prefect-repository/auto-image"
+    tag: latest
+    dockerfile: auto
+    platform: "linux/amd64"
+
+push:
+- prefect_docker.deployments.steps.push_docker_image:
+    requires: prefect-docker>=0.4.0
+    image_name: "{{ build-image.image_name }}"
+    tag: "{{ build-image.tag }}"
+
+pull:
+- prefect.deployments.steps.set_working_directory:
+    directory: /opt/prefect/auto_docker_image
+
+definitions:
+  tags: &common_tags
+    - "gke"
+  work_pool: &common_work_pool
+    name: "gke"
+    job_variables:
+      image: "{{ build-image.image }}"
+
+deployments:
+- name: "auto_docker_image"
+  tags: *common_tags
+  schedule: null
+  entrypoint: "flows/etl.py:etl"
+  work_pool: *common_work_pool

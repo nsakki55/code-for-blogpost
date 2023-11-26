@@ -1,0 +1,25 @@
+name: flows
+prefect-version: 2.13.8
+
+build: null
+
+push: null
+
+pull:
+- prefect.deployments.steps.set_working_directory:
+    directory: /opt/prefect/custom_image
+
+definitions:
+  tags: &common_tags
+    - "gke"
+  work_pool: &common_work_pool
+    name: "gke"
+    job_variables:
+      image: "asia-docker.pkg.dev/{{ $GCP_PROJECT_ID }}/prefect-repository/custom-image"
+
+deployments:
+- name: "custom_image"
+  tags: *common_tags
+  schedule: null
+  entrypoint: "etl.py:etl"
+  work_pool: *common_work_pool
