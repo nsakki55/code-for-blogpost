@@ -18,7 +18,7 @@ push:
 
 pull:
 - prefect.deployments.steps.set_working_directory:
-    directory: /opt/prefect/auto_docker_image
+    directory: /opt/prefect/auto_image
 
 definitions:
   tags: &common_tags
@@ -29,7 +29,7 @@ definitions:
       image: "{{ build-image.image }}"
 
 deployments:
-- name: "auto_docker_image"
+- name: "auto_image"
   tags: *common_tags
   schedule: null
   entrypoint: "flows/etl.py:etl"
