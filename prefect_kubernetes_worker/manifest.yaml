@@ -1,0 +1,161 @@
+---
+# Source: prefect-worker/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prefect-worker
+  namespace: "prefect"
+  labels:
+    app.kubernetes.io/name: prefect-worker
+    helm.sh/chart: prefect-worker-2023.11.28
+    app.kubernetes.io/instance: prefect-worker
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "2.14.7"
+    app.kubernetes.io/component: worker
+    prefect-version: 2.14.7
+---
+# Source: prefect-worker/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: prefect-worker
+  namespace: "prefect"
+  labels:
+    app.kubernetes.io/name: prefect-worker
+    helm.sh/chart: prefect-worker-2023.11.28
+    app.kubernetes.io/instance: prefect-worker
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "2.14.7"
+    app.kubernetes.io/component: worker
+    prefect-version: 2.14.7
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "pods/status"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: [ "get", "list", "watch", "create", "update", "patch", "delete" ]
+---
+# Source: prefect-worker/templates/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prefect-worker
+  namespace: "prefect"
+  labels:
+    app.kubernetes.io/name: prefect-worker
+    helm.sh/chart: prefect-worker-2023.11.28
+    app.kubernetes.io/instance: prefect-worker
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "2.14.7"
+    app.kubernetes.io/component: worker
+    prefect-version: 2.14.7
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prefect-worker
+subjects:
+  - kind: ServiceAccount
+    name: prefect-worker
+    namespace: "prefect"
+---
+# Source: prefect-worker/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prefect-worker
+  namespace: "prefect"
+  labels:
+    app.kubernetes.io/name: prefect-worker
+    helm.sh/chart: prefect-worker-2023.11.28
+    app.kubernetes.io/instance: prefect-worker
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "2.14.7"
+    app.kubernetes.io/component: worker
+    prefect-version: 2.14.7
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prefect-worker
+      app.kubernetes.io/instance: prefect-worker
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prefect-worker
+        helm.sh/chart: prefect-worker-2023.11.28
+        app.kubernetes.io/instance: prefect-worker
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/version: "2.14.7"
+        app.kubernetes.io/component: worker
+        prefect-version: 2.14.7
+    spec:
+      serviceAccountName: prefect-worker
+      securityContext:
+        fsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+      containers:
+        - name: prefect-worker
+          image: "prefecthq/prefect:2.14.7-python3.11-kubernetes"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /usr/bin/tini
+            - -g
+            - --
+            - /opt/prefect/entrypoint.sh
+          args:
+            - prefect
+            - worker
+            - start
+            - --type
+            - "kubernetes"
+            - --pool
+            - "<target work pool name>"
+            - --install-policy
+            - "prompt"
+          workingDir: /home/prefect
+          env:
+            - name: HOME
+              value: /home/prefect
+            - name: PREFECT_WORKER_PREFETCH_SECONDS
+              value: "10"
+            - name: PREFECT_WORKER_QUERY_SECONDS
+              value: "5"
+            - name: PREFECT_API_ENABLE_HTTP2
+              value: "true"
+            - name: PREFECT_API_URL
+              value: "https://api.prefect.cloud/api/accounts/<target account ID>/workspaces/<target workspace ID>"
+            - name: PREFECT_KUBERNETES_CLUSTER_UID
+              value: ""
+            - name: PREFECT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prefect-api-key
+                  key:  key
+            - name: PREFECT_DEBUG_MODE
+              value: "false"
+          envFrom:
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+          volumeMounts:
+            - mountPath: /home/prefect
+              name: scratch
+              subPathExpr: home
+            - mountPath: /tmp
+              name: scratch
+              subPathExpr: tmp
+      volumes:
+        - name: scratch
+          emptyDir: {}

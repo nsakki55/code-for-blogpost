@@ -1,0 +1,7 @@
+worker:
+  cloudApiConfig:
+    accountId: <target account ID>
+    workspaceId: <target workspace ID>
+  config:
+    workPool: <target work pool name>
+
