@@ -1,0 +1,27 @@
+[project]
+name = "controlflow-introduction"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "nsakki55", email = "n.sakki55@gmail.com" }
+]
+dependencies = [
+    "controlflow>=0.8.2",
+    "langchain_anthropic>=0.1.23",
+]
+readme = "README.md"
+requires-python = ">= 3.11"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/controlflow_introduction"]
