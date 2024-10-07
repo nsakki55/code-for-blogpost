@@ -1,0 +1,30 @@
+services:
+  glue.dev.s3.local:
+    container_name: s3.dev
+    image: localstack/localstack:3.8.0
+    environment:
+      - SERVICES=s3
+      - AWS_DEFAULT_REGION=ap-northeast-1
+      - AWS_DEFAULT_OUTPUT=json
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    networks:
+      - glue.dev.network
+  glue.dev:
+    container_name: glue.dev
+    image: amazon/aws-glue-libs:glue_libs_4.0.0_image_01
+    volumes:
+      - ./:/home/glue_user/workspace/
+    environment:
+      - DISABLE_SSL=true
+      - AWS_REGION=ap-northeast-1
+      - AWS_OUTPUT=json
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    networks:
+      - glue.dev.network
+    tty: true
+    stdin_open: true
+networks:
+  glue.dev.network:
+    name: glue.dev.network
