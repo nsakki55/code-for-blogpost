@@ -11,6 +11,7 @@ S3_ENDPOINT_URL = "http://s3.dev:4566"
 AWS_REGION = "ap-northeast-1"
 S3_BUCKET = "test-job-bucket"
 
+
 def get_dynamic_frame_from_s3(glue_context: GlueContext, source_s3_path: str) -> DynamicFrame:
     dyf = glue_context.create_dynamic_frame.from_options(
         format_options={
@@ -40,7 +41,7 @@ def write_dynamic_frame_to_s3(glue_context: GlueContext, dyf: DynamicFrame, dest
 
 def main(args: Dict[str, str]) -> None:
     sc = SparkContext()
-    if args['JOB_NAME'] == 'test':
+    if args["JOB_NAME"] == "test":
         sc._jsc.hadoopConfiguration().set("fs.s3a.endpoint", S3_ENDPOINT_URL)
         sc._jsc.hadoopConfiguration().set("fs.s3a.endpoint.region", AWS_REGION)
         sc._jsc.hadoopConfiguration().set("fs.s3a.path.style.access", "true")
