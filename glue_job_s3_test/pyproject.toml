@@ -1,7 +1,7 @@
 [project]
 name = "glue-job-s3-test"
 version = "0.1.0"
-description = "Add your description here"
+description = "Example project for test glue job by localstack S3 bucket"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
