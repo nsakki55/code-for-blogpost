@@ -32,10 +32,6 @@ def get_dynamic_frame_from_s3(glue_context: GlueContext, source_s3_path: str) ->
     return dyf
 
 
-def dynamic_frame_to_dataframe(dyf: DynamicFrame) -> DataFrame:
-    return dyf.toDF()
-
-
 def check_table_in_database(glue_context: GlueContext, database_name: str, table_name: str) -> bool:
     tables_collection = glue_context.spark_session.catalog.listTables(database_name)
     return table_name in [table.name for table in tables_collection]
@@ -57,7 +53,7 @@ def main(args: Dict[str, str]) -> None:
     job.init(args["JOB_NAME"], args)
 
     dyf = get_dynamic_frame_from_s3(glue_context=glue_context, source_s3_path=f"s3://{S3_BUCKET}/input")
-    df = dynamic_frame_to_dataframe(dyf=dyf)
+    df = dyf.toDF()
     is_exist = check_table_in_database(glue_context=glue_context, database_name=DATABASE_NAME, table_name=TABLE_NAME)
     if is_exist:
         append_iceberg_table(df, TABLE_NAME, f"s3://{S3_BUCKET}/output")

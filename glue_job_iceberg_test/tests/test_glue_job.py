@@ -163,10 +163,8 @@ def cleanup_warehouse() -> None:
 def test_table(glue_context: GlueContext, sample_dataframe: DataFrame) -> str:
     spark = glue_context.spark_session
     table_name = "test_table"
-    database_name = "default"
     try:
         sample_dataframe.writeTo(f"local.{table_name}").create()
-        # sample_dataframe.writeTo(f"local.{database_name}.{table_name}").create()
         yield table_name
     finally:
         spark.sql(f"DROP TABLE IF EXISTS local.{table_name}")
@@ -175,7 +173,6 @@ def test_table(glue_context: GlueContext, sample_dataframe: DataFrame) -> str:
 def test_create_iceberg_table(glue_context: GlueContext, cleanup_warehouse: None, sample_dataframe: DataFrame) -> None:
     spark = glue_context.spark_session
 
-    # new table setting
     table_name = "test_new_table"
     table_full_name = f"local.{table_name}"
     table_location = f"{WAREHOUSE_PATH}/{table_name}"
@@ -191,18 +188,14 @@ def test_append_iceberg_table(
 ) -> None:
     spark = glue_context.spark_session
 
-    # existing table setting
     table_full_name = f"local.{test_table}"
     table_location = f"{WAREHOUSE_PATH}/{test_table}"
 
-    # append dataframe
     append_data = [
         ("val4", 4, "2000/01/04 04:00:00"),
         ("val5", 5, "2000/01/05 05:00:00"),
     ]
     append_df = spark.createDataFrame(append_data, sample_dataframe.schema)
-
-    spark.catalog.setCurrentDatabase("default")
 
     append_iceberg_table(df=append_df, table_name=table_full_name, table_location=table_location)
 
