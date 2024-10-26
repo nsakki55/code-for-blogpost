@@ -1,0 +1,15 @@
+[project]
+name = "mypkg-flat"
+version = "0.1.0"
+description = "Example package using flat layout"
+requires-python = ">=3.11"
+dependencies = [
+    "pytest",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["mypkg_flat"]

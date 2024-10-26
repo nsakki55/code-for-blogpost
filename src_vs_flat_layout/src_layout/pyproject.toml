@@ -1,0 +1,15 @@
+[project]
+name = "mypkg-src"
+version = "0.1.0"
+description = "Example package using src layout"
+requires-python = ">= 3.12"
+dependencies = [
+    "pytest",
+]
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
