@@ -1,0 +1,9 @@
+[project]
+name = "glue-job-iceberg-schema-change"
+version = "0.1.0"
+description = "Sample project for glue job to change schema in iceberg table"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pandas>=2.2.3",
+]
