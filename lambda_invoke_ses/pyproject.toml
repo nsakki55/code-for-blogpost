@@ -1,0 +1,12 @@
+[project]
+name = "lambda-invoke-ses"
+version = "0.1.0"
+description = "Sample project for invoking ses from lambda in private subnet"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.8.4",
+]
