@@ -1,0 +1,11 @@
+[project]
+name = "alb-vs-nlb"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.5"
+dependencies = [
+    "locust>=2.41.2",
+    "notebook>=7.4.7",
+    "pandas>=2.3.3",
+]
